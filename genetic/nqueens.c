@@ -16,8 +16,7 @@ int * reproduce(int *parent1, int *parent2);
 void mutate_organism(int *board);
 
 
-int queen_comp(const void *elem1, const void *elem2) 
-{
+int queen_comp(const void *elem1, const void *elem2) {
     int *board1 = *((int **) elem1);
     int *board2 = *((int **) elem2);
 
@@ -32,8 +31,7 @@ int shuffle_comp(const void *elem1, const void *elem2) {
     return (rand() % 100 < 50) ? 1 : -1;
 }
 
-int main(int argc, char* argv[]) 
-{
+int main(int argc, char* argv[]) {
     int pop_size = 30;
     int max_generations = 10000;
     BOARD_SIZE = 20;
