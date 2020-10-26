@@ -2,9 +2,13 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
+#include <stdbool.h>
+#include <time.h>
 
 int BOARD_SIZE;
 
+void genetic();
+void brute_force();
 int ** init_population(int pop_size);
 int * init_board();
 void print_board(int *board);
@@ -14,6 +18,8 @@ int min(int x, int y);
 int * weighted_pick_parent(int **population, int pop_size);
 int * reproduce(int *parent1, int *parent2);
 void mutate_organism(int *board);
+bool backtrack_solve(int *board, int row, bool* col_has_queen);
+double get_time_elapsed(void (*fn)(void));
 
 
 int queen_comp(const void *elem1, const void *elem2) {
@@ -32,13 +38,35 @@ int shuffle_comp(const void *elem1, const void *elem2) {
 }
 
 int main(int argc, char* argv[]) {
+    if (argc < 2) {
+        printf("pass board size in param\n");
+        exit(1);
+    }
+
+
+    BOARD_SIZE = atoi(argv[1]);
+    
+    double genetic_elapsed = get_time_elapsed(genetic);
+    double brute_force_elapsed = get_time_elapsed(brute_force);
+    
+    printf("GENETIC      time taken: %f\n", genetic_elapsed);
+    printf("BRUTE FORCE  time taken: %f\n", brute_force_elapsed);
+}
+
+double get_time_elapsed(void (*fn)(void)) {
+    clock_t t = clock();
+    fn();
+    t = clock() - t;
+    return ((double)t)/CLOCKS_PER_SEC;
+}
+
+void genetic() {
     int pop_size = 30;
     int max_generations = 10000;
-    BOARD_SIZE = 20;
 
     srand(time(0));
 
-    int ** population = init_population(pop_size);
+    int **population = init_population(pop_size);
     qsort(population, pop_size, sizeof(int *), queen_comp);
 
     for(int gen = 0; gen < max_generations; gen++) {
@@ -62,8 +90,44 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    print_board(population[0]);
+    // print_board(population[0]);
     printf("num queens in danger %d\n", num_queens_in_danger(population[0]));
+}
+
+void brute_force() {
+    int *board = malloc(BOARD_SIZE * sizeof(int));
+    for(int i = 0; i < BOARD_SIZE; i++) {
+        board[i] = -1;
+    }
+
+    bool *col_has_queen = calloc(BOARD_SIZE, sizeof(bool));
+    bool res = backtrack_solve(board, 0, col_has_queen);
+
+    // print_board(board);
+    printf(res ? "true\n" : "false\n");
+}
+
+bool backtrack_solve(int *board, int row, bool* col_has_queen) {
+    if (row >= BOARD_SIZE) {
+        return true;
+    }
+
+    for(int col = 0; col < BOARD_SIZE; col++) {
+        if(col_has_queen[col]) continue;
+
+        board[row] = col;
+        col_has_queen[col] = true;
+
+        if (!is_in_danger(board, row) && backtrack_solve(board, row+1, col_has_queen)) {
+            return true;
+        }
+
+        // it didn't work, revert
+        board[row] = -1;
+        col_has_queen[col] = false;
+    }
+
+    return false;
 }
 
 int * weighted_pick_parent(int **population, int pop_size) {
