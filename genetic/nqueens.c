@@ -38,19 +38,32 @@ int shuffle_comp(const void *elem1, const void *elem2) {
 }
 
 int main(int argc, char* argv[]) {
-    if (argc < 2) {
-        printf("pass board size in param\n");
+    if (argc < 3) {
+        printf("Usage => ./nqueens {genetic|brute_force|compare} {board_size}\n");
         exit(1);
     }
 
-
-    BOARD_SIZE = atoi(argv[1]);
+    BOARD_SIZE = atoi(argv[2]);
     
-    double genetic_elapsed = get_time_elapsed(genetic);
-    double brute_force_elapsed = get_time_elapsed(brute_force);
-    
-    printf("GENETIC      time taken: %f\n", genetic_elapsed);
-    printf("BRUTE FORCE  time taken: %f\n", brute_force_elapsed);
+    char *type = argv[1];
+    printf("input %s\n", type);
+    if (strcmp(type, "genetic") == 0) {
+        printf("GENETIC      time taken: %f\n", get_time_elapsed(genetic));
+    } 
+    else if (strcmp(type, "brute_force") == 0) {
+        printf("BRUTE FORCE  time taken: %f\n", get_time_elapsed(brute_force));
+    }
+    else if (strcmp(type, "compare") == 0) {
+        double genetic_elapsed = get_time_elapsed(genetic);
+        double brute_force_elapsed = get_time_elapsed(brute_force);
+        
+        printf("GENETIC      time taken: %f\n", genetic_elapsed);
+        printf("BRUTE FORCE  time taken: %f\n", brute_force_elapsed);
+    }
+    else {
+        printf("Usage => ./nqueens {genetic|brute_force|compare} {board_size}\n");
+        exit(1);
+    }
 }
 
 double get_time_elapsed(void (*fn)(void)) {
@@ -71,8 +84,8 @@ void genetic() {
 
     for(int gen = 0; gen < max_generations; gen++) {
         int fitness = num_queens_in_danger(population[0]);
+        printf("gen %d, fitness: %d\n", gen, fitness);
         if(fitness == 0) break;
-        if (gen % 10 == 0) printf("gen %d, fitness: %d\n", gen, fitness);
 
         for(int child_num = 0; child_num < pop_size; child_num++) {
             int *parent1 = weighted_pick_parent(population, pop_size);
@@ -90,7 +103,7 @@ void genetic() {
         }
     }
 
-    // print_board(population[0]);
+    print_board(population[0]);
     printf("num queens in danger %d\n", num_queens_in_danger(population[0]));
 }
 
@@ -111,6 +124,7 @@ bool backtrack_solve(int *board, int row, bool* col_has_queen) {
     if (row >= BOARD_SIZE) {
         return true;
     }
+
 
     for(int col = 0; col < BOARD_SIZE; col++) {
         if(col_has_queen[col]) continue;
