@@ -4,13 +4,10 @@ import numpy as np
 
 
 def gen_data(num_samples):
-    # b, w1
-    w = np.array([3, -1])
-
     data = []
     for _ in range(num_samples):
         x = np.array([1, random.uniform(-10, 10)])
-        y = np.dot(w, x)
+        y = 2*x[1] + 5
 
         data.append((x, y + random.gauss(0, 2)))
     return data
@@ -41,7 +38,7 @@ def plot_loss_gradient(data):
     plt.clf()
 
     size = 30
-    x = np.linspace(-10, 10, size)
+    x = np.linspace(-100, 100, size)
     y = np.linspace(-10, 10, size)
 
     X, Y = np.meshgrid(x, y)
@@ -57,7 +54,7 @@ def plot_loss_gradient(data):
 
     fig = plt.figure()
     ax = plt.axes(projection='3d')
-    ax.contour3D(X, Y, Z, 50)
+    ax.contour3D(X, Y, Z, 100)
     ax.set_xlabel('bias')
     ax.set_ylabel('slope')
     ax.set_zlabel('error')
@@ -76,9 +73,9 @@ def train(data, alpha):
             print('MSE:', mse_loss(data, w))
             print()
 
-        # loss_gradient = sum_loss_gradients(data, w)
-        x, y = random.sample(data, 1)[0]
-        loss_gradient = get_loss_gradient(x, y, w)
+        loss_gradient = sum_loss_gradients(data, w)
+        # x, y = random.sample(data, 1)[0]
+        # loss_gradient = get_loss_gradient(x, y, w)
         w = w - alpha*loss_gradient
 
     return w
@@ -112,7 +109,6 @@ if __name__ == '__main__':
     data = gen_data(100)
     plot_loss_gradient(data)
 
-    w = train(data, 0.001)
+    w = train(data, 0.00001)
     plot_data(data, w, 'final')
-    print('total loss', mse_loss(data, w))
-
+    print('final loss', mse_loss(data, w))
